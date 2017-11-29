@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Create and style clusters</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.2/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.42.2/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <p> <h1>have a look @ </h1>
+        <pre>
+            https://www.youtube.com/watch?v=GVqY80sDr20
+            http://geojson.io
+            https://www.youtube.com/watch?v=jRXaQC0jKcg            
+        </pre>
+    </p>
+    <div id='map'></div>
+
+    <script>
+        mapboxgl.accessToken =
+            'pk.eyJ1IjoiZHozMTY0MjQiLCJhIjoiNzI3NmNkOTcyNWFlNGQxNzU2OTA1N2EzN2FkNWIwMTcifQ.NS8KWg47FzfLPlKY0JMNiQ'
+        var map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v9',
+            center: [50.59179687498357, 25.66995747013945],
+            zoom: 3
+        });
+
+        map.on('load', function () {
+            // Add a new source from our GeoJSON data and set the
+            // 'cluster' option to true. GL-JS will add the point_count property to your source data.
+            map.addSource("earthquakes", {
+                type: "geojson",
+                // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
+                // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
+                //data: "/mapbox-gl-js/assets/earthquakes.geojson",
+                data : {"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[79.8046875,17.308687886770034]}},{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[74.970703125,18.396230138028827]}},{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[76.81640625,16.29905101458183]}},{"type":"Feature","properties":{},"geometry":{"type":"Point","coordinates":[77.87109375,21.616579336740603]}}]},
+                cluster: true,
+                clusterMaxZoom: 14, // Max zoom to cluster points on
+                clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+            });
+
+            map.addLayer({
+                id: "clusters",
+                type: "circle",
+                source: "earthquakes",
+                filter: ["has", "point_count"],
+                paint: {
+                    "circle-color": {
+                        property: "point_count",
+                        type: "interval",
+                        stops: [
+                            [0, "#51bbd6"],
+                            [100, "#f1f075"],
+                            [750, "#f28cb1"],
+                        ]
+                    },
+                    "circle-radius": {
+                        property: "point_count",
+                        type: "interval",
+                        stops: [
+                            [0, 20],
+                            [100, 30],
+                            [750, 40]
+                        ]
+                    }
+                }
+            });
+
+            map.addLayer({
+                id: "cluster-count",
+                type: "symbol",
+                source: "earthquakes",
+                filter: ["has", "point_count"],
+                layout: {
+                    "text-field": "{point_count_abbreviated}",
+                    "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+                    "text-size": 12
+                }
+            });
+
+            map.addLayer({
+                id: "unclustered-point",
+                type: "circle",
+                source: "earthquakes",
+                filter: ["!has", "point_count"],
+                paint: {
+                    "circle-color": "#11b4da",
+                    "circle-radius": 4,
+                    "circle-stroke-width": 1,
+                    "circle-stroke-color": "#fff"
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
